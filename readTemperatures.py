@@ -4,8 +4,19 @@ import time
 import os.path
 from glob import glob
 import re
+import requests
 
 filePath = "./www/lampo.txt"
+
+influxdb_address="10.8.0.100:8086"
+influxdb_api="/write"
+influxdb_db="?db=Lämpötilat"
+region="mokki"
+server="xorppo"
+influxdb_full_url = "http://{0}{1}{2}".format(influxdb_address, influxdb_api, influxdb_db)
+
+def readTemperatures():
+    return "ph"
 
 avgtemperatures = []
 #Find out which sensors exist assuming all devices connected to the pi are temperature sensors
@@ -28,6 +39,12 @@ for sensor in range(len(sensor_paths)):
         temperaturedata = secondline.split(" ")[9]
         temperature = round(float(temperaturedata[2:]), 3)
         temperatures.append(temperature / 1000)
+
+    realtemp = round(sum(temperatures) / float(len(temperatures)), 3)
+    print realtemp
+    payload = 'lampotila,host={0},region={1},sensor={2} value={3}'.format(server,region,sensor_paths[sensor],realtemp)
+    response = requests.post(influxdb_full_url, data=payload)
+    print response
     avgtemperatures.append(round(sum(temperatures) / float(len(temperatures)), 3))
 print (avgtemperatures)
 lampo = str(avgtemperatures)
