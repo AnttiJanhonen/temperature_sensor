@@ -17,8 +17,8 @@ influxdb_db_enabled = config.get('InfluxDB', 'enabled')
 influxdb_address = config.get('InfluxDB', 'influxdb_address')
 influxdb_api = config.get('InfluxDB', 'influxdb_api')
 influxdb_db = config.get('InfluxDB', 'influxdb_db')
-region = config.get('InfluxDB', 'region')
-server = config.get('InfluxDB', 'server')
+influxdb_region = config.get('InfluxDB', 'region')
+influxdb_server = config.get('InfluxDB', 'server')
 
 
 def read_temperatures(sensor_paths):
@@ -48,7 +48,7 @@ def read_temperatures(sensor_paths):
 
 def post_temp(sensor_paths, sensor, temp):
     influxdb_full_url = "http://{0}{1}{2}".format(influxdb_address, influxdb_api, influxdb_db)
-    payload = 'lampotila,host={0},region={1},sensor={2} value={3}'.format(server, region, sensor_paths[sensor], temp)
+    payload = 'lampotila,host={0},region={1},sensor={2} value={3}'.format(influxdb_server, influxdb_region, sensor_paths[sensor], temp)
     response = requests.post(influxdb_full_url, data=payload)
     return response
 
