@@ -11,9 +11,10 @@ config = ConfigParser.ConfigParser()
 config.read("temp_config.cfg")
 
 filePath = config.get('writetofile', 'file_location')
-write_temps_to_file = config.get('writetofile', 'enabled')
+file_write_enabled = config.getboolean('writetofile', 'enabled')
 
-influxdb_db_enabled = config.get('InfluxDB', 'enabled')
+influxdb_db_print_response = config.getboolean('InfluxDB', 'print_response')
+influxdb_db_enabled = config.getboolean('InfluxDB', 'enabled')
 influxdb_address = config.get('InfluxDB', 'influxdb_address')
 influxdb_api = config.get('InfluxDB', 'influxdb_api')
 influxdb_db = config.get('InfluxDB', 'influxdb_db')
@@ -40,9 +41,11 @@ def read_temperatures(sensor_paths):
             temperatures.append(temperature / 1000)
 
         realtemp = round(sum(temperatures) / float(len(temperatures)), 3)
-        print post_temp(sensor_paths, sensor, realtemp)
+        if (influxdb_db_enabled):
+            post_temp(sensor_paths, sensor, realtemp)
         avgtemperatures.append(round(sum(temperatures) / float(len(temperatures)), 3))
-    write_temp_to_file(avgtemperatures)
+    if (file_write_enabled):
+        write_temp_to_file(avgtemperatures)
     return "Complete"
 
 
@@ -50,7 +53,8 @@ def post_temp(sensor_paths, sensor, temp):
     influxdb_full_url = "http://{0}{1}{2}".format(influxdb_address, influxdb_api, influxdb_db)
     payload = 'lampotila,host={0},region={1},sensor={2} value={3}'.format(influxdb_host, influxdb_region, sensor_paths[sensor], temp)
     response = requests.post(influxdb_full_url, data=payload)
-    return response
+    if (influxdb_db_print_response):
+        print "Posted: {0} ".format(payload) + str(response)
 
 
 def sensor_paths():
