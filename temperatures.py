@@ -5,15 +5,20 @@ import os.path
 from glob import glob
 import re
 import requests
+import ConfigParser
 
-filePath = "./www/lampo.txt"
+config = ConfigParser.ConfigParser()
+config.read("temp_config.cfg")
 
-influxdb_address = "10.8.0.100:8086"
-influxdb_api = "/write"
-influxdb_db = "?db=Lämpötilat"
-region = "mokki"
-server = "xorppo"
-write_temps_to_file = True
+filePath = config.get('writetofile', 'file_location')
+write_temps_to_file = config.get('writetofile', 'enabled')
+
+influxdb_db_enabled = config.get('InfluxDB', 'enabled')
+influxdb_address = config.get('InfluxDB', 'influxdb_address')
+influxdb_api = config.get('InfluxDB', 'influxdb_api')
+influxdb_db = config.get('InfluxDB', 'influxdb_db')
+region = config.get('InfluxDB', 'region')
+server = config.get('InfluxDB', 'server')
 
 
 def read_temperatures(sensor_paths):
