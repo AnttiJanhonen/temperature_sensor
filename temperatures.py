@@ -13,16 +13,10 @@ influxdb_api = "/write"
 influxdb_db = "?db=Lämpötilat"
 region = "mokki"
 server = "xorppo"
-influxdb_full_url = "http://{0}{1}{2}".format(influxdb_address, influxdb_api, influxdb_db)
-# avgtemperatures = []
-# Find out which sensors exist assuming all devices connected to the pi are temperature sensors
-sensor_paths = glob("/sys/bus/w1/devices/*/")
-regex = re.compile(r'(([^\']+)w1_bus_master1([^\']+))')
-# Remove w1_bus_master from the array as it is not a sensor.
-sensor_paths = [x for x in sensor_paths if not regex.match(x)]
+write_temps_to_file = True
 
 
-def read_temperatures():
+def read_temperatures(sensor_paths):
     # Loop through the sensors and read them and write their value to avgtemperatures array.
     avgtemperatures = []
     for sensor in range(len(sensor_paths)):
@@ -41,20 +35,30 @@ def read_temperatures():
             temperatures.append(temperature / 1000)
 
         realtemp = round(sum(temperatures) / float(len(temperatures)), 3)
-        print post_temp(sensor, realtemp)
+        print post_temp(sensor_paths, sensor, realtemp)
         avgtemperatures.append(round(sum(temperatures) / float(len(temperatures)), 3))
     write_temp_to_file(avgtemperatures)
-    # return "Complete"
+    return "Complete"
 
 
-def post_temp(sensor, temp):
+def post_temp(sensor_paths, sensor, temp):
+    influxdb_full_url = "http://{0}{1}{2}".format(influxdb_address, influxdb_api, influxdb_db)
     payload = 'lampotila,host={0},region={1},sensor={2} value={3}'.format(server, region, sensor_paths[sensor], temp)
     response = requests.post(influxdb_full_url, data=payload)
     return response
 
 
+def sensor_paths():
+    # Find out which sensors exist assuming all devices connected to the pi are temperature sensors
+    sensor_paths = glob("/sys/bus/w1/devices/*/")
+    regex = re.compile(r'(([^\']+)w1_bus_master1([^\']+))')
+    # Remove w1_bus_master from the array as it is not a sensor.
+    sensor_paths = [x for x in sensor_paths if not regex.match(x)]
+    return sensor_paths
+
+
 def main():
-    print read_temperatures()
+    print read_temperatures(sensor_paths())
 
 
 def write_temp_to_file(avgtemperatures):
