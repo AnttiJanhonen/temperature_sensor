@@ -21,6 +21,8 @@ influxdb_db = config.get('InfluxDB', 'influxdb_db')
 influxdb_region = config.get('InfluxDB', 'region')
 influxdb_host = config.get('InfluxDB', 'host')
 
+temperature_cutoff = config.getint('common', 'temperature_cutoff')
+
 
 def read_temperatures(sensor_paths):
     # Loop through the sensors and read them and write their value to avgtemperatures array.
@@ -41,7 +43,7 @@ def read_temperatures(sensor_paths):
             temperatures.append(temperature / 1000)
 
         realtemp = round(sum(temperatures) / float(len(temperatures)), 3)
-        if (influxdb_db_enabled):
+        if (influxdb_db_enabled and realtemp >= temperature_cutoff):
             post_temp(sensor_paths, sensor, realtemp)
         avgtemperatures.append(round(sum(temperatures) / float(len(temperatures)), 3))
     if (file_write_enabled):
