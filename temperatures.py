@@ -21,6 +21,7 @@ influxdb_db = config.get('InfluxDB', 'influxdb_db')
 influxdb_region = config.get('InfluxDB', 'region')
 influxdb_host = config.get('InfluxDB', 'host')
 
+temperature_unit = config.get('common', 'temperature_unit')
 temperature_cutoff = config.getint('common', 'temperature_cutoff')
 
 
@@ -43,6 +44,8 @@ def read_temperatures(sensor_paths):
             temperatures.append(temperature / 1000)
 
         realtemp = round(sum(temperatures) / float(len(temperatures)), 3)
+        if (temperature_unit == "f"):
+            realtemp = celcius_to_farenheit(realtemp)
         if (influxdb_db_enabled and realtemp >= temperature_cutoff):
             post_temp(sensor_paths, sensor, realtemp)
         avgtemperatures.append(round(sum(temperatures) / float(len(temperatures)), 3))
@@ -66,6 +69,10 @@ def sensor_paths():
     # Remove w1_bus_master from the array as it is not a sensor.
     sensor_paths = [x for x in sensor_paths if not regex.match(x)]
     return sensor_paths
+
+
+def celcius_to_farenheit(c):
+    return (c * 9 / 5) + 32
 
 
 def main():
