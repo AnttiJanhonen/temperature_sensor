@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 import os.path
+from os.path import normpath, basename
 from glob import glob
 import re
 import requests
@@ -53,7 +54,8 @@ def read_temperatures(sensor_paths):
 def post_temp(sensor_paths, sensor, temp):
     influxdb_full_url = "http://{0}{1}{2}".format(influxdb_address, influxdb_api, influxdb_db)
     payload = 'lampotila,host={0},region={1},sensor={2} value={3}'.format(influxdb_host, influxdb_region,
-                                                                          sensor_paths[sensor], temp)
+                                                                          basename(normpath(sensor_paths[sensor])),
+                                                                          temp)
     response = requests.post(influxdb_full_url, data=payload)
     if (influxdb_db_print_response):
         print "Posted: {0} ".format(payload) + str(response)
