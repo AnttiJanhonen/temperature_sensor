@@ -5,9 +5,9 @@ from os.path import normpath, basename
 from glob import glob
 import re
 import requests
-import ConfigParser
+import configparser
 
-config = ConfigParser.ConfigParser()
+config = configparser.ConfigParser()
 config.read("temperatures.cfg")
 
 filePath = config.get('writetofile', 'file_location')
@@ -60,7 +60,7 @@ def post_temp(sensor_paths, sensor, temp):
                                                                     temp)
     response = requests.post(influxdb_full_url, data=payload)
     if (influxdb_db_print_response):
-        print "Posted: {0} ".format(payload) + str(response)
+        print ('Posted: {0} ').format(payload) + str(response)
 
 
 def sensor_paths():
@@ -73,7 +73,7 @@ def sensor_paths():
 
 
 def main():
-    print read_temperatures(sensor_paths())
+    print (read_temperatures(sensor_paths()))
 
 
 def write_temp_to_file(avgtemperatures):
